@@ -39,7 +39,7 @@ public class Encoder {
     private Direction direction;
 
     private int lastPosition;
-    private double velocityEstimate;
+    private AveragingRingBuffer velocityEstimates;
     private double lastUpdateTime;
 
     public Encoder(DcMotorEx motor, NanoClock clock) {
@@ -49,7 +49,7 @@ public class Encoder {
         this.direction = Direction.FORWARD;
 
         this.lastPosition = 0;
-        this.velocityEstimate = 0.0;
+        this.velocityEstimates = new AveragingRingBuffer(5);
         this.lastUpdateTime = clock.seconds();
     }
 
@@ -75,7 +75,7 @@ public class Encoder {
         if (currentPosition != lastPosition) {
             double currentTime = clock.seconds();
             double dt = currentTime - lastUpdateTime;
-            velocityEstimate = (currentPosition - lastPosition) / dt;
+            velocityEstimates.add((currentPosition - lastPosition) / dt);
             lastPosition = currentPosition;
             lastUpdateTime = currentTime;
         }
@@ -88,6 +88,6 @@ public class Encoder {
     }
 
     public double getCorrectedVelocity() {
-        return inverseOverflow(getRawVelocity(), velocityEstimate);
+        return inverseOverflow(getRawVelocity(), velocityEstimates.getAverage());
     }
 }
