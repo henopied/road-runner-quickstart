@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.util;
 
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.MovingStatistics;
 
 /**
  * Wraps a motor instance to provide corrected velocity counts and allow reversing without changing the corresponding
@@ -39,7 +40,7 @@ public class Encoder {
     private Direction direction;
 
     private int lastPosition;
-    private AveragingRingBuffer velocityEstimates;
+    private MovingStatistics velocityEstimates;
     private double lastUpdateTime;
 
     public Encoder(DcMotorEx motor, NanoClock clock) {
@@ -49,7 +50,7 @@ public class Encoder {
         this.direction = Direction.FORWARD;
 
         this.lastPosition = 0;
-        this.velocityEstimates = new AveragingRingBuffer(5);
+        this.velocityEstimates = new MovingStatistics(5);
         this.lastUpdateTime = clock.seconds();
     }
 
@@ -88,6 +89,6 @@ public class Encoder {
     }
 
     public double getCorrectedVelocity() {
-        return inverseOverflow(getRawVelocity(), velocityEstimates.getAverage());
+        return inverseOverflow(getRawVelocity(), velocityEstimates.getMean());
     }
 }
